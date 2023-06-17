@@ -12,6 +12,11 @@
 // 6. Give the user their winnings.
 // 7. Play again.
 
+// The game uses the following symbols and their corresponding values:
+// A: 5
+// B: 4
+// C: 3
+// D: 2
 
 const prompt = require('prompt-sync')({sigint: true});
 
@@ -55,37 +60,150 @@ const deposit = () => {
 
 // 2. Determine the number of lines to bet on
 
-const getLines = () => {
-    while(true){
-        const lines = Number(prompt('How many lines would you like to bet on? Please enter a number between 1 and 8. '));
-        const numberLines= parseInt(lines); 
+const getNumberOfLines = () => {
+    while (true) {
+        const lines = prompt("Enter the number of lines you want to bet on (1-3):  ");
+        const numberOfLines = parseFloat(lines);
 
-        if (isNaN(numberLines) || numberLines <= 0 || numberLines > 8){
-            console.log('You have either entered an invalid number of lines or a number of lines less than or equal to 0. Please try again.');
+        if (isNaN(numberOfLines) || (numberOfLines <= 0) || (numberOfLines > 3)) {
+            console.log("Invalid number of lines. Try again.");
         }
 
-        else{
-            console.log(`You have bet on ${numberLines} lines.`);
-            return numberLines;
+        else {
+            console.log("You are betting on " + numberOfLines + " lines.");
+            return numberOfLines;
         }
     }
+
 };
+
 
 
 // 3. Collect the bet amount from the user
 
-const getBet = (depositAmount) => {
-    while(true){
-        const betAmount = Number(prompt('How much would you like to bet? '));
-        const numberBetAmount= parseFloat(betAmount); 
+const getBet= (balance, lines) => {
+    while (true) {
+        const bet = prompt("Enter the bet per line :  ");
+        const numberBet = parseFloat(bet);
 
-        if (isNaN(numberBetAmount) || numberBetAmount <= 0 || numberBetAmount > depositAmount){
-            console.log('You have either entered an invalid bet amount or a bet amount less than or equal to 0 or greater than your deposit amount. Please try again.');
+        if (isNaN(numberBet) || (numberBet <= 0) || (numberBet > (balance/lines))) {
+            console.log("Invalid bet. Try again.");
         }
 
-        else{
-            console.log(`You have bet $${numberBetAmount}.`);
-            return numberBetAmount;
+        else {
+            console.log("You are betting $" + numberBet + ".");
+            return numberBet;
         }
     }
 };
+
+// 4. Spin the slot machine
+
+const spin = () => {
+    const symbols = [];
+    for (const[symbol, count] of Object.entries(SYMBOLS_COUNT)) {
+        for (let i = 0; i < count; i++) {
+            symbols.push(symbol);
+        }
+    }
+    const reels= [];
+
+    for (let i = 0; i < COLS; i++) {
+        reels.push([]);
+        const reelSymbols= [...symbols];
+        for (let j = 0; j < ROWS; j++) {
+            const randomIndex = Math.floor(Math.random() * reelSymbols.length);
+            const selectedSymbol = reelSymbols[randomIndex];
+            reels[i].push(selectedSymbol);
+            reelSymbols.splice(randomIndex, 1);
+        }
+    }
+    return reels;
+};
+
+
+// 5. Check if the user won
+
+const transpose = (reels) => {
+    const rows = [];
+    for (let i = 0; i < ROWS; i++) {
+        rows.push([]);
+        for (let j = 0; j < COLS; j++) {
+            rows[i].push(reels[j][i]);
+        }
+    }
+    return rows;
+};
+
+const printRows = (rows) => {
+    for (const row of rows) {
+        let rowString = "";
+        for (const [i, symbol] of rows.entries()) {
+            rowString += symbol + " ";
+            if(i !== rows.length - 1) {
+                rowString += "| ";
+            }
+        }
+        console.log(rowString);
+    }
+};
+
+
+// 6. Give the user their winnings.
+
+const getWinnings = (rows, bet, lines) => {
+    let winnings=0;
+
+    for (let row=0; row < lines; row++) {
+        const symbols = rows[row];
+        let allSame = true;
+        for (const symbol of symbols) {
+            if (symbol !== symbols[0]) {
+                allSame = false;
+                break;
+            }
+        }
+
+        if (allSame) {
+            winnings += bet * SYMBOL_VALUES[symbols[0]];
+        }
+    }
+    return winnings;
+};
+
+
+// 7. Repeat Until the user runs out of money or chooses to quit
+
+const gameLoop = () => {
+    let balance = deposit();
+
+    while (true) {
+        console.log("Your balance is $" + balance.toString() + ".");
+        const numberOfLines = getNumberOfLines();
+        const bet= getBet(balance, numberOfLines);
+        balance -= bet * numberOfLines;
+        const reels = spin();
+        const rows = transpose(reels);
+        printRows(rows);
+        const winnings = getWinnings(rows, bet, numberOfLines);
+        balance += winnings;
+        console.log ("You won $" + winnings.toString() + "!");
+
+        if (balance <= 0) {
+            console.log("You are out of money. Game over!");
+            break;
+        }
+
+        const playAgain = prompt("Do you want to play again? (y/n) ");
+        if (playAgain !== "y") {
+            break;
+        }
+    }
+};
+
+
+gameLoop();
+
+
+
+
