@@ -6,4 +6,4 @@ A sample user game has been displayed below:
 <img width="1085" alt="Screenshot 2023-06-05 at 1 22 58 AM" src="https://github.com/TheCatalog360/slot-machine/assets/98696211/782d9822-2af7-4221-9258-95642cb12194">
 <img width="1085" alt="Screenshot 2023-06-05 at 1 23 17 AM" src="https://github.com/TheCatalog360/slot-machine/assets/98696211/fb06f2ed-0aed-4cea-9511-33d872abd874">.
 
-Give it a try and enjoy the game !
+Give it a try and enjoy !
